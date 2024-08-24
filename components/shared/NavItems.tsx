@@ -1,28 +1,24 @@
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+"use client";
+import { headerLinks } from "@/constants";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 function NavItems() {
+  const pathName = usePathname();
   return (
-    <nav className="md:hidden">
-      <Sheet>
-        <SheetTrigger>Open</SheetTrigger>
-        <SheetContent>
-          <SheetHeader>
-            <SheetTitle>Are you absolutely sure?</SheetTitle>
-            <SheetDescription>
-              This action cannot be undone. This will permanently delete your
-              account and remove your data from our servers.
-            </SheetDescription>
-          </SheetHeader>
-        </SheetContent>
-      </Sheet>
-    </nav>
+    <ul className="md:flex-between flex w-full flex-col items-start gap-5 md:flex-row">
+      {headerLinks.map((link) => {
+        const isActive = pathName === link.route;
+        return (
+          <li
+            key={link.route}
+            className={`${isActive && "text-primary-500"} flex-center p-medium-16 whitespace-nowrap`}
+          >
+            <Link href={link.route}>{link.label}</Link>
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 
