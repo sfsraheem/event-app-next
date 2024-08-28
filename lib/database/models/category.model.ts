@@ -5,15 +5,20 @@ export interface ICategory extends Document {
   name: string;
 }
 
-const CategorySchema = new Schema<ICategory>({
-  name: {
-    type: String,
-    required: true,
-    unique: true,
+const CategorySchema = new Schema<ICategory>(
+  {
+    name: {
+      type: String,
+      required: true,
+      unique: true,
+    },
   },
-});
+  {
+    collection: "categories",
+  }
+);
 
 const CategoryModel =
-  models.CategoryModel || model<ICategory>("categories", CategorySchema);
+  models.categories || model<ICategory>("categories", CategorySchema);
 
 export default CategoryModel;

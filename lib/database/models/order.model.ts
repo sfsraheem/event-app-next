@@ -37,9 +37,10 @@ const OrderSchema = new Schema(
   },
   {
     timestamps: true,
+    collection: "orders",
   }
 );
 
-const OrderModel = models.OrderModel || model("orders", OrderSchema);
+const OrderModel = models.orders || model("orders", OrderSchema);
 
 export default OrderModel;
