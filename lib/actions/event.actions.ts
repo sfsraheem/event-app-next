@@ -4,6 +4,8 @@ import {
   CreateEventParams,
   DeleteEventParams,
   GetAllEventsParams,
+  GetEventsByUserParams,
+  GetRelatedEventsByCategoryParams,
   UpdateEventParams,
 } from "@/types";
 import { connectToDatabase } from "../database";
@@ -59,23 +61,23 @@ export const createEvent = async ({
 
 export async function updateEvent({ userId, event, path }: UpdateEventParams) {
   try {
-    await connectToDatabase()
+    await connectToDatabase();
 
-    const eventToUpdate = await EventModel.findById(event._id)
+    const eventToUpdate = await EventModel.findById(event._id);
     if (!eventToUpdate || eventToUpdate.organizer.toHexString() !== userId) {
-      throw new Error('Unauthorized or event not found')
+      throw new Error("Unauthorized or event not found");
     }
 
     const updatedEvent = await EventModel.findByIdAndUpdate(
       event._id,
       { ...event, category: event.categoryId },
       { new: true }
-    )
-    revalidatePath(path)
+    );
+    revalidatePath(path);
 
-    return JSON.parse(JSON.stringify(updatedEvent))
+    return JSON.parse(JSON.stringify(updatedEvent));
   } catch (error) {
-    handleError(error)
+    handleError(error);
   }
 }
 
@@ -153,3 +155,72 @@ export const deleteEvent = async ({ eventId, path }: DeleteEventParams) => {
     handleError(error);
   }
 };
+
+export async function getRelatedEventsByCategory({
+  categoryId,
+  eventId,
+  limit = 3,
+  page = 1,
+}: GetRelatedEventsByCategoryParams) {
+  try {
+    await connectToDatabase();
+
+    const condition = {
+      $and: [{ category: categoryId }, { _id: { $ne: eventId } }],
+    };
+    const totalCount = await EventModel.countDocuments(condition);
+
+    const { offset, totalPages } = getPaginationDetails(
+      totalCount,
+      limit,
+      page
+    );
+
+    const eventsQuery = EventModel.find(condition)
+      .sort({ createdAt: -1 })
+      .skip(offset)
+      .limit(limit);
+
+    const events = await populateEvents(eventsQuery);
+
+    return {
+      data: JSON.parse(JSON.stringify(events)),
+      totalPages,
+    };
+  } catch (error) {
+    handleError(error);
+  }
+}
+
+export async function getEventsByUser({
+  userId,
+  limit = 6,
+  page,
+}: GetEventsByUserParams) {
+  try {
+    await connectToDatabase();
+
+    const condition = { organizer: userId };
+    const totalCount = await EventModel.countDocuments(condition);
+
+    const { offset, totalPages } = getPaginationDetails(
+      totalCount,
+      limit,
+      page
+    );
+
+    const eventsQuery = EventModel.find(condition)
+      .sort({ createdAt: -1 })
+      .skip(offset)
+      .limit(limit);
+
+    const events = await populateEvents(eventsQuery);
+
+    return {
+      data: JSON.parse(JSON.stringify(events)),
+      totalPages,
+    };
+  } catch (error) {
+    handleError(error);
+  }
+}
