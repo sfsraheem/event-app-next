@@ -1,7 +1,10 @@
 // import CheckoutButton from '@/components/shared/CheckoutButton';
 import CheckoutButton from "@/components/shared/CheckoutButton";
 import Collection from "@/components/shared/Collection";
-import { getEventById, getRelatedEventsByCategory } from "@/lib/actions/event.actions";
+import {
+  getEventById,
+  getRelatedEventsByCategory,
+} from "@/lib/actions/event.actions";
 import { formatDateTime } from "@/lib/utils";
 import { SearchParamProps } from "@/types";
 import Image from "next/image";
@@ -11,12 +14,12 @@ const EventDetails = async ({
   searchParams,
 }: SearchParamProps) => {
   const event = await getEventById(id);
-
-    const relatedEvents = await getRelatedEventsByCategory({
-      categoryId: event.category._id,
-      eventId: event._id,
-      page: parseInt(searchParams.page as string),
-    })
+  const page = Number(searchParams?.page) || 1;
+  const relatedEvents = await getRelatedEventsByCategory({
+    categoryId: event.category._id,
+    eventId: event._id,
+    page,
+  });
 
   return (
     <>
@@ -101,13 +104,13 @@ const EventDetails = async ({
       <section className="wrapper my-8 flex flex-col gap-8 md:gap-12">
         <h2 className="h2-bold">Related Events</h2>
 
-        <Collection 
+        <Collection
           data={relatedEvents?.data}
           emptyTitle="No Events Found"
           emptyStateSubtext="Come back later"
           collectionType="All_Events"
           limit={3}
-          page={searchParams.page as string}
+          page={page}
           totalPages={relatedEvents?.totalPages}
         />
       </section>
